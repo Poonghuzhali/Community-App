@@ -269,9 +269,10 @@ export function Chip({ label, active, onPress, style }) {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
+      accessibilityRole="button"
       style={[styles.chip, active && { backgroundColor: colors.primary, borderColor: colors.primary }, style]}
     >
-      <Text style={[styles.chipText, active && { color: colors.textInverse }]}>{label}</Text>
+      <Text style={[styles.chipText, active && { color: colors.textInverse }]} numberOfLines={1}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -443,10 +444,11 @@ const styles = StyleSheet.create({
   pill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, alignSelf: 'flex-start' },
   pillText: { fontSize: 11.5, fontWeight: '800', letterSpacing: 0.3 },
   chip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.pill,
+    alignSelf: 'center', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    height: 36, paddingHorizontal: 14, borderRadius: radius.pill,
     backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, marginRight: spacing.sm,
   },
-  chipText: { fontSize: 13, fontWeight: '600', color: colors.textMuted },
+  chipText: { fontSize: 13, lineHeight: 16, fontWeight: '600', color: colors.textMuted },
   badge: {
     minWidth: 18, height: 18, borderRadius: 9, backgroundColor: colors.danger,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,

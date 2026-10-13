@@ -78,7 +78,7 @@ export default function AnnouncementsScreen({ navigation }) {
         <Loader label="Loading…" />
       ) : tab === 'notices' ? (
         <>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chipRow}>
             {CATEGORIES.map((c) => (
               <Chip key={c.key || 'all'} label={c.label} active={category === c.key} onPress={() => setCategory(c.key)} />
             ))}
@@ -153,14 +153,15 @@ export default function AnnouncementsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  tabs: { flexDirection: 'row', paddingHorizontal: spacing.lg, marginBottom: spacing.sm },
+  tabs: { flexDirection: 'row', paddingHorizontal: spacing.lg, marginBottom: spacing.sm, gap: spacing.sm },
   tab: {
     flex: 1, paddingVertical: 10, borderRadius: radius.pill, alignItems: 'center',
-    backgroundColor: colors.greyBg, marginRight: spacing.sm,
+    backgroundColor: colors.greyBg,
   },
   tabActive: { backgroundColor: colors.primary },
   tabText: { fontSize: 13, fontWeight: '700', color: colors.textMuted },
-  chipRow: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  chipScroll: { flexGrow: 0, maxHeight: 60 },
+  chipRow: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, alignItems: 'center' },
   card: { marginBottom: spacing.md },
   cardHead: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
   catPill: { backgroundColor: colors.primaryLight, paddingHorizontal: 9, paddingVertical: 3, borderRadius: radius.pill },
