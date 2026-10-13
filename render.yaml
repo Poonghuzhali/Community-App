@@ -1,0 +1,66 @@
+# Render Blueprint for Community Connect.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Create everything at once from the Render dashboard:
+#   New +  ->  Blueprint  ->  pick this repo  ->  Apply
+#
+# What it provisions:
+#   1. community-connect-api  - the Node/Express + SQLite REST API (web service)
+#   2. community-connect-web  - the Expo web build of the app (static site)
+#
+# The web app is built with EXPO_PUBLIC_API_URL pointing at the API service,
+# so no manual URL wiring is needed.
+
+services:
+  # ---------------------------------------------------------------- REST API
+  - type: web
+    name: community-connect-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: server
+    buildCommand: npm install
+    # Fresh free-tier instances have an ephemeral disk, so migrate + seed run
+    # on every boot. Both are idempotent, so this is safe to repeat.
+    startCommand: npm run start:prod
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 24
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      # Fixed demo OTP so the three demo logins keep working in production.
+      - key: FIXED_DEV_OTP
+        value: "123456"
+      - key: OTP_TTL_MINUTES
+        value: "5"
+      - key: OTP_MAX_ATTEMPTS
+        value: "5"
+      - key: CORS_ORIGINS
+        value: "*"
+
+  # ------------------------------------------------------------- Web (Expo)
+  - type: web
+    name: community-connect-web
+    runtime: static
+    rootDir: mobile
+    buildCommand: npm install && npx expo export --platform web --output-dir dist
+    staticPublishPath: ./dist
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 24
+      # Resolves to the API service hostname at build time (bare host is
+      # normalised to https:// in mobile/src/config.js).
+      - key: EXPO_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: community-connect-api
+          property: host
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -21,7 +21,16 @@ function webApiUrl() {
   return `http://${host}:4000`;
 }
 
-export const API_URL = (fromEnv || (Platform.OS === 'web' ? webApiUrl() : fromExtra) || 'http://192.168.1.5:4000').replace(/\/$/, '');
+function normalize(url) {
+  if (!url) return url;
+  const trimmed = url.replace(/\/$/, '');
+  // Allow a bare hostname (e.g. a Render `fromService` reference) and default it to https.
+  return /^https?:\/\//.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+export const API_URL = normalize(
+  fromEnv || (Platform.OS === 'web' ? webApiUrl() : fromExtra) || 'http://192.168.1.5:4000'
+);
 
 export const isDev = typeof __DEV__ !== 'undefined' ? __DEV__ : true;
 

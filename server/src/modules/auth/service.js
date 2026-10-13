@@ -27,9 +27,10 @@ function createAuthService({ db, users, notifications }) {
       [phone, hash, purpose, config.otpTtlMinutes]
     );
 
-    // SMS gateways (MSG91 / Twilio) plug in here. In dev the code is returned
-    // so the demo works end-to-end without a paid SMS provider.
-    if (config.env !== 'production') {
+    // SMS gateways (MSG91 / Twilio) plug in here. In dev — or whenever a fixed
+    // demo OTP is configured — the code is returned so the app works end-to-end
+    // without a paid SMS provider.
+    if (config.env !== 'production' || config.fixedDevOtp) {
       return { sent: true, expiresIn: config.otpTtlMinutes, devOtp: code, expiresAt: row.expires_at };
     }
     await sendSms(phone, `Your Community Connect verification code is ${code}`);

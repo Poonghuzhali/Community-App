@@ -14,7 +14,10 @@ const config = {
   otpTtlMinutes: parseInt(env.OTP_TTL_MINUTES || '5', 10),
   otpMaxAttempts: parseInt(env.OTP_MAX_ATTEMPTS || '5', 10),
   // Development convenience: force a fixed OTP so the demo is easy.
-  fixedDevOtp: isProd ? '' : (env.FIXED_DEV_OTP || '123456'),
+  // Set FIXED_DEV_OTP in any environment (including production hosted demos)
+  // to keep the fixed-OTP flow; when unset, production generates real codes
+  // that are never returned to the client.
+  fixedDevOtp: env.FIXED_DEV_OTP || (isProd ? '' : '123456'),
   uploadDir: env.UPLOAD_DIR || path.join(serverRoot, 'uploads'),
   maxUploadBytes: parseInt(env.MAX_UPLOAD_BYTES || String(5 * 1024 * 1024), 10),
   publicBaseUrl: env.PUBLIC_BASE_URL || '',
