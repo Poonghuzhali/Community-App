@@ -21,9 +21,10 @@
         "backgroundColor": "#1B4D3E"
       },
       "permissions": [
-        "CAMERA",
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "android.permission.CAMERA",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -61,7 +62,11 @@
       "expo-font"
     ],
     "extra": {
-      "apiUrl": "https://community-connect-api-rcrv.onrender.com"
-    }
+      "apiUrl": "https://community-connect-api-rcrv.onrender.com",
+      "eas": {
+        "projectId": "3ce5ed9d-6778-41d9-bbd4-a54a9a7bb370"
+      }
+    },
+    "owner": "poonghuzhali"
   }
 }
