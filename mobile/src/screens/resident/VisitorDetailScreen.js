@@ -52,18 +52,6 @@ export default function VisitorDetailScreen({ navigation, route }) {
     }
   };
 
-  const gateAct = async (endpoint, body = {}) => {
-    setBusy(true);
-    try {
-      await api(`/api/security/${endpoint}`, { method: 'POST', body });
-      await load();
-    } catch (err) {
-      Alert.alert('Gate action failed', err.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
   if (loading) return <Loader label="Loading visitor pass…" />;
   if (!pass) {
     return (
@@ -76,9 +64,7 @@ export default function VisitorDetailScreen({ navigation, route }) {
   }
 
   const isHost = pass.host_id === user?.id;
-  const isStaff = ['security', 'admin'].includes(user?.role);
   const canApprove = isHost && pass.status === 'pending';
-  const canUseGate = isStaff && ['approved', 'checked_in'].includes(pass.status);
   const showPassCode = isHost && ['pending', 'approved'].includes(pass.status);
 
   return (
@@ -157,20 +143,7 @@ export default function VisitorDetailScreen({ navigation, route }) {
         </Card>
       ) : null}
 
-      {/* ---------------------------------------------------- gate actions */}
-      {canUseGate ? (
-        <Card style={{ marginBottom: spacing.lg }}>
-          <Text style={[typography.h3, { marginBottom: spacing.md }]}>Gate controls</Text>
-          {pass.status === 'approved' ? (
-            <Button title="Record entry" icon="log-in-outline" onPress={() => gateAct(`entry/${id}`)} loading={busy} style={{ marginBottom: spacing.sm }} />
-          ) : null}
-          {pass.status === 'checked_in' ? (
-            <Button title="Record exit" icon="log-out-outline" variant="secondary" onPress={() => gateAct(`exit/${id}`)} loading={busy} style={{ marginBottom: spacing.sm }} />
-          ) : null}
-          <Button title="Deny entry" variant="danger" icon="ban-outline" onPress={() => gateAct(`deny/${id}`, { remarks: 'Denied at gate' })} disabled={busy} />
-        </Card>
-      ) : null}
-
+      {/* ---------------------------------------------------- cancel pass */}
       {isHost && ['pending', 'approved'].includes(pass.status) ? (
         <Button
           title="Cancel pass"

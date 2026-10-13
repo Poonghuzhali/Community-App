@@ -20,7 +20,11 @@ const admin = {
   id: 'u-admin', phone: '9000000001', full_name: 'Aarav Sharma', role: 'admin',
   flat_id: 'f-1', flat_label: 'A-101', is_active: true, email: null, avatar_url: null, joined_on: '2024-01-15',
 };
-const byId = { [resident.id]: resident, [admin.id]: admin };
+const security = {
+  id: 'u-security', phone: '9000000002', full_name: 'Vikram Singh', role: 'security',
+  flat_id: null, flat_label: null, is_active: true, email: null, avatar_url: null, joined_on: '2024-01-20',
+};
+const byId = { [resident.id]: resident, [admin.id]: admin, [security.id]: security };
 
 const complaint = {
   id: 'c-1', reference_no: 'CC-20261008-0001', raised_by: resident.id, category_id: 1,
@@ -35,14 +39,14 @@ function makeContainer() {
     }),
     listFlats: async () => [{ id: 'f-1', block: 'A', flat_number: '101' }],
     updateProfile: async (id, patch) => ({ ...byId[id], ...patch }),
-    login: async (phone) => (phone === admin.phone ? admin : resident),
+    login: async (phone) => (phone === admin.phone ? admin : phone === security.phone ? security : resident),
   };
 
   const auth = {
     requestOtp: async (phone) => ({ sent: true, expiresIn: 5, devOtp: '123456', phone }),
     verifyOtp: async (phone, code) => {
       if (String(code) !== '123456') throw ApiError.badRequest('Incorrect OTP');
-      const user = phone === admin.phone ? admin : resident;
+      const user = phone === admin.phone ? admin : phone === security.phone ? security : resident;
       return { token: signToken(user), user, isNewUser: false };
     },
     logout: async () => ({ ok: true }),
@@ -307,12 +311,29 @@ test('pre-approving a visitor works and returns the gate OTP', async () => {
 });
 
 test('security gate verification accepts the right OTP and rejects junk', async () => {
-  const token = await login('9000000001'); // admin also has gate access
+  const token = await login('9000000002'); // on-duty security officer
   const ok = await call('POST', '/api/security/verify', { token, body: { code: '482913', channel: 'otp' } });
   assert.equal(ok.status, 200);
 
   const bad = await call('POST', '/api/security/verify', { token, body: { code: '111111', channel: 'qr' } });
   assert.equal(bad.status, 404);
+});
+
+test('only security may run gate actions; admins keep read-only access', async () => {
+  const adminToken = await login('9000000001');
+  const deniedVerify = await call('POST', '/api/security/verify', { token: adminToken, body: { code: '482913', channel: 'otp' } });
+  assert.equal(deniedVerify.status, 403);
+
+  const deniedEntry = await call('POST', '/api/security/entry/v-1', { token: adminToken });
+  assert.equal(deniedEntry.status, 403);
+
+  const stats = await call('GET', '/api/security/stats', { token: adminToken });
+  assert.equal(stats.status, 200);
+
+  const securityToken = await login('9000000002');
+  const entry = await call('POST', '/api/security/entry/v-1', { token: securityToken });
+  assert.equal(entry.status, 200);
+  assert.equal(entry.body.data.status, 'checked_in');
 });
 
 test('marketplace admin moderation is admin-only', async () => {

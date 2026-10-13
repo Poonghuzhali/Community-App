@@ -201,12 +201,28 @@ function createVisitorsService({ db, notifications }) {
     }
     policy.assertVerifiable(pass);
     policy.assertEntryAllowed(pass);
+    await log(pass.id, channel === 'qr' ? 'qr_verified' : 'otp_verified', actor,
+      `Verified via ${channel === 'qr' ? 'QR scan' : 'OTP'}`);
     return pass;
   }
 
   async function recordEntry(id, actor, remarks) {
     const pass = await getPass(id);
     policy.assertEntryAllowed(pass);
+
+    // Entry may only be recorded right after this officer verifies the pass.
+    const verified = await db.one(
+      `SELECT id FROM visitor_logs
+        WHERE visitor_id = $1 AND performed_by = $2
+          AND action IN ('otp_verified', 'qr_verified')
+          AND created_at >= date_add(now(), '-15 minutes')
+        ORDER BY created_at DESC LIMIT 1`,
+      [id, actor.id]
+    );
+    if (!verified) {
+      throw ApiError.badRequest('Verify the visitor OTP or QR at the gate before recording entry');
+    }
+
     const updated = await db.one(
       `UPDATE visitor_passes
           SET status = 'checked_in', entry_at = COALESCE(entry_at, NOW()), verified_by = $1
@@ -214,7 +230,6 @@ function createVisitorsService({ db, notifications }) {
       [actor.id, id]
     );
     await log(id, 'entry', actor, remarks || 'Entry recorded');
-    await log(id, 'otp_verified', actor, `Verified by ${actor.role}`);
     const full = await getPass(id);
     await notifyHost(full, {
       title: `${pass.visitor_name} has entered the campus`,

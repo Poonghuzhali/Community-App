@@ -119,10 +119,15 @@ function createSecurityRoutes({ visitors, authMw }) {
   const router = express.Router();
   const { requireAuth, requireRole } = authMw;
 
-  router.use(requireAuth, requireRole('security', 'admin'));
+  router.use(requireAuth);
+
+  // Gate actions belong to on-duty security staff only; admins keep read access.
+  const securityOnly = requireRole('security');
+  const gateStaff = requireRole('security', 'admin');
 
   router.post(
     '/verify',
+    securityOnly,
     validate(
       v.shape({
         code: v.str({ required: true, max: 64, label: 'OTP/QR code' }),
@@ -137,6 +142,7 @@ function createSecurityRoutes({ visitors, authMw }) {
 
   router.post(
     '/entry/:id',
+    securityOnly,
     validate(v.shape({ remarks: v.str({ max: 300, label: 'Remarks' }) })),
     asyncHandler(async (req, res) => {
       res.json({ success: true, data: await visitors.recordEntry(req.params.id, req.user, req.body.remarks) });
@@ -145,6 +151,7 @@ function createSecurityRoutes({ visitors, authMw }) {
 
   router.post(
     '/exit/:id',
+    securityOnly,
     validate(v.shape({ remarks: v.str({ max: 300, label: 'Remarks' }) })),
     asyncHandler(async (req, res) => {
       res.json({ success: true, data: await visitors.recordExit(req.params.id, req.user, req.body.remarks) });
@@ -153,6 +160,7 @@ function createSecurityRoutes({ visitors, authMw }) {
 
   router.post(
     '/deny/:id',
+    securityOnly,
     validate(v.shape({ remarks: v.str({ max: 300, label: 'Remarks' }) })),
     asyncHandler(async (req, res) => {
       res.json({ success: true, data: await visitors.denyEntry(req.params.id, req.user, req.body.remarks) });
@@ -161,6 +169,7 @@ function createSecurityRoutes({ visitors, authMw }) {
 
   router.get(
     '/inside',
+    gateStaff,
     asyncHandler(async (req, res) => {
       res.json({ success: true, data: await visitors.currentInside() });
     })
@@ -168,6 +177,7 @@ function createSecurityRoutes({ visitors, authMw }) {
 
   router.get(
     '/stats',
+    gateStaff,
     asyncHandler(async (req, res) => {
       res.json({ success: true, data: await visitors.stats() });
     })
