@@ -1,0 +1,67 @@
+{
+  "expo": {
+    "name": "Community Connect",
+    "slug": "community-connect",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "communityconnect",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.communityconnect.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Community Connect uses the camera to scan visitor QR codes at the gate."
+      }
+    },
+    "android": {
+      "package": "com.communityconnect.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B4D3E"
+      },
+      "permissions": [
+        "CAMERA",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Community Connect to scan visitor QR codes at the gate."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Community Connect to attach photos to your complaints and listings."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#1B4D3E"
+        }
+      ],
+      "expo-asset",
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1B4D3E",
+          "image": "./assets/splash.png",
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "apiUrl": "http://192.168.1.4:4000"
+    }
+  }
+}
