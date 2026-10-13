@@ -67,6 +67,25 @@ export default function GateScreen({ navigation }) {
     }
   };
 
+  const requestEntry = () => {
+    if (!match) {
+      Alert.alert(
+        'Verify the visitor first',
+        'Verify the visitor OTP or QR at the gate before recording entry.'
+      );
+      return;
+    }
+    if (match.status === 'approved') {
+      gate(`entry/${match.id}`);
+      return;
+    }
+    if (match.status === 'checked_in') {
+      Alert.alert('Already inside', `${match.visitor_name} is already checked in.`);
+      return;
+    }
+    Alert.alert('Entry not allowed', `This pass is ${String(match.status).replace('_', ' ')}.`);
+  };
+
   const openScanner = async () => {
     if (!permission?.granted) {
       const res = await requestPermission();
@@ -126,6 +145,14 @@ export default function GateScreen({ navigation }) {
           <Button title="Verify" icon="search-outline" onPress={() => verify()} loading={busy} disabled={!code} style={{ flex: 1.4 }} />
           <Button title="Scan" icon="qr-code-outline" variant="secondary" onPress={openScanner} style={{ flex: 1 }} />
         </View>
+
+        <Button
+          title="Record entry"
+          icon="log-in-outline"
+          variant="outline"
+          onPress={requestEntry}
+          style={{ marginTop: spacing.md }}
+        />
       </Card>
 
       {/* ----------------------------------------------------- matched pass */}
