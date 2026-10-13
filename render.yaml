@@ -53,13 +53,11 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 24
-      # Resolves to the API service hostname at build time (bare host is
-      # normalised to https:// in mobile/src/config.js).
+      # Full public URL of the API service. Render appends a suffix to the
+      # name when it is already taken, so it is set explicitly here rather
+      # than via fromService.
       - key: EXPO_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: community-connect-api
-          property: host
+        value: https://community-connect-api-rcrv.onrender.com
     routes:
       - type: rewrite
         source: /*
