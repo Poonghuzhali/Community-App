@@ -37,6 +37,19 @@ function createApp(container) {
   const uploadDir = ensureUploadDir();
   app.use('/uploads', express.static(uploadDir, { maxAge: '7d' }));
 
+  app.get('/', (req, res) =>
+    res.json({
+      success: true,
+      data: {
+        service: 'community-connect-api',
+        status: 'ok',
+        health: '/health',
+        api: '/api',
+        time: new Date().toISOString(),
+      },
+    })
+  );
+
   app.get('/health', (req, res) =>
     res.json({ success: true, data: { status: 'ok', service: 'community-connect-api', time: new Date().toISOString() } })
   );
